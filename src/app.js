@@ -2,6 +2,7 @@ const express = require("express");
 const { default: helmet } = require("helmet");
 const morgan = require("morgan");
 const app = express();
+require('dotenv').config();
 
 // init middleware
 app.use(morgan("dev"));
@@ -16,6 +17,7 @@ app.get("/", (req, res, next) => {
 });
 // init db
 require("./dbs/init.mongodb");
+
 
 // handling error
 

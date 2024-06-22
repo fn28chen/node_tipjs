@@ -1,9 +1,13 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const connectionString = `mongodb://localhost:27017/shopDEV`;
+const { db: {
+    host,
+    name, 
+    port,
+}} = require("../configs/configMongo");
+const connectionString = `mongodb://${host}:${port}/${name}`;
 const { countConnect, checkOverload } = require("../utils/checkConnect");
-
 class Database {
   constructor() {
     this.connect();
@@ -25,7 +29,7 @@ class Database {
       .then((_) => {
         console.log(`Connected to ${connectionString}`);
         countConnect();
-        checkOverload();
+        // checkOverload();
       })
       .catch((_) => console.log(`Error connecting to ${connectionString}`));
   }
