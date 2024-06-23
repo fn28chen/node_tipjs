@@ -8,13 +8,12 @@ require('dotenv').config();
 app.use(morgan("dev"));
 // app.use(morgan("combined"));
 app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // init routes
-app.get("/", (req, res, next) => {
-  res.json({
-    message: "success",
-  });
-});
+app.use('', require('./routes'));
+
 // init db
 require("./dbs/init.mongodb");
 

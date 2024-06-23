@@ -1,0 +1,11 @@
+### url ref
+@url_dev = http://localhost:3090/v1/api
+
+POST {{url_dev}}/shop/signup
+content-type: application/json
+
+{
+    "name": "p2",
+    "email": "p2@gmail.com",
+    "password": "123456"
+}
