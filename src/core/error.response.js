@@ -1,7 +1,7 @@
 'use strict'
 
 const StatusCode = {
-    FOBBIDDEN: 403,
+    FORBIDDEN: 403,
     CONFLICT: 409,
 }
 
@@ -24,7 +24,7 @@ class ConflictRquestError extends ErrorResponse {
 }
 
 class BadRequestError extends ErrorResponse {
-    constructor(message = ResponseStatusCode.FORBBIDDEN, statusCode = StatusCode.FOBBIDDEN) {
+    constructor(message = ResponseStatusCode.FORBBIDDEN, statusCode = StatusCode.FORBIDDEN) {
         super(message, statusCode);
     }
 }
