@@ -115,6 +115,8 @@ class AccessService {
     if (!match) throw new AuthFailureError("Error: Auth error!");
 
     // step 3: Create token pair and save
+    // The privateKey, publicKey in login is same method as signUp
+    // if not, they can't decrypt the token
     const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
       modulusLength: 4096,
       publicKeyEncoding: {
