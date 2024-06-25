@@ -12,7 +12,6 @@ const {
   AuthFailureError,
 } = require("../core/error.response");
 
-
 const { findByEmail } = require("./shop.service");
 
 const RoleShop = {
@@ -45,19 +44,19 @@ class AccessService {
     // step 3: Create privateKey, publicKey and save collection keyStore
     if (newShop) {
       // created privateKey, publicKey
-      // const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-      //   modulusLength: 4096,
-      //   publicKeyEncoding: {
-      //     type: "pkcs1",
-      //     format: "pem",
-      //   },
-      //   privateKeyEncoding: {
-      //     type: "pkcs1",
-      //     format: "pem",
-      //   },
-      // });
-      const privateKey = crypto.randomBytes(64).toString("hex");
-      const publicKey = crypto.randomBytes(64).toString("hex");
+      const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+          type: "pkcs1",
+          format: "pem",
+        },
+        privateKeyEncoding: {
+          type: "pkcs1",
+          format: "pem",
+        },
+      });
+      // const privateKey = crypto.randomBytes(64).toString("hex");
+      // const publicKey = crypto.randomBytes(64).toString("hex");
       console.log({ privateKey, publicKey }); // save collection keyStore
       const publicKeyString = await KeyTokenService.createKeyToken({
         userId: newShop._id,
@@ -82,10 +81,10 @@ class AccessService {
           userId: newShop._id,
           email,
         },
-        publicKeyString,
+        publicKey,
         privateKey
       );
-      // console.log("Token pair: ", tokens);
+      console.log("Token pair: ", tokens);
 
       return {
         code: 201,
@@ -106,19 +105,28 @@ class AccessService {
     // }
   };
 
-  
-  static login = async ({ email, password, refreshToken = null}) => {
+  static login = async ({ email, password, refreshToken = null }) => {
     // step 1: Check email exist?
     const foundShop = await findByEmail({ email });
-    if(!foundShop) throw new BadRequestError("Error: Shop not found!");
+    if (!foundShop) throw new BadRequestError("Error: Shop not found!");
 
     // step 2: Match password
     const match = bcrypt.compare(password, foundShop.password);
-    if(!match) throw new AuthFailureError("Error: Auth error!");
-    
+    if (!match) throw new AuthFailureError("Error: Auth error!");
+
     // step 3: Create token pair and save
-    const privateKey = crypto.randomBytes(64).toString("hex");
-    const publicKey = crypto.randomBytes(64).toString("hex");
+    const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+      modulusLength: 4096,
+      publicKeyEncoding: {
+        type: "pkcs1",
+        format: "pem",
+      },
+      privateKeyEncoding: {
+        type: "pkcs1",
+        format: "pem",
+      },
+    });
+    console.log({ privateKey, publicKey }); // save collection keyStore
     const publicKeyString = await KeyTokenService.createKeyToken({
       userId: foundShop._id,
       publicKey,
@@ -129,32 +137,33 @@ class AccessService {
         message: "Create publicKey fail",
       };
     }
+
     // step 4: Generate token pair
-    const { _id: userId } = foundShop;
     const tokens = await createTokenPair(
       {
-        userId,
+        userId: foundShop._id,
         email,
       },
-      publicKeyString,
+      publicKey,
       privateKey
     );
+    console.log("Token pair: ", tokens);
 
     await KeyTokenService.createKeyToken({
       refreshToken: tokens.refreshToken,
       publicKey,
       privateKey,
-      userId
-    })
+      userId: foundShop._id,
+    });
 
     return {
-        shop: getInfoData({
-          fields: ["_id", "name", "email"],
-          object: foundShop,
-        }),
-        tokens,
+      shop: getInfoData({
+        fields: ["_id", "name", "email"],
+        object: foundShop,
+      }),
+      tokens,
     };
-  }
+  };
 }
 
 module.exports = AccessService;
