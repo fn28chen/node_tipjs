@@ -12,13 +12,21 @@ const keyTokenSchema = new Schema(
       required: true,
       ref: "User",
     },
+    privateKey: {
+      type: String,
+      required: true,
+    },
     publicKey: {
       type: String,
       required: true,
     },
-    refreshToken: {
+    refreshTokensUsed: {
       type: Array,
       default: [],
+    },
+    refreshToken: {
+      type: String,
+      required: true,
     },
   },
   {
