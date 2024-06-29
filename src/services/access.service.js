@@ -10,6 +10,7 @@ const {
   BadRequestError,
   ConflictRequestError,
   AuthFailureError,
+  ForbiddenError,
 } = require("../core/error.response");
 
 const { findByEmail } = require("./shop.service");
@@ -172,6 +173,45 @@ class AccessService {
     const delKey = await KeyTokenService.removeKeyById(keyStore._id);
     console.log({delKey});
     return delKey;
+  }
+
+  static handlerRefreshTokenV2 = async ({keyStore, user, refreshToken}) => {
+    const { userId, email } = user;
+    if(keyStore.refreshTokenUsed.includes(refreshToken)) {
+      await KeyTokenService.deleteKeyById(userId);
+      throw new ForbiddenError("Error: Refresh token used!");
+    }
+
+    if(keyStore.refreshToken !== refreshToken) {
+      throw new AuthFailureError("Error: Refresh token not found!");
+    }
+
+    const foundShop = await findByEmail(email);
+    if(!foundShop) throw new AuthFailureError("Error: Shop not found!");
+
+    const tokens = await createTokenPair(
+      {
+        userId,
+        email,
+      },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+
+    await holderToken.updateOne({
+      $set: {
+        refreshTokenUsed: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokenUsed: refreshToken,
+      },
+    })
+
+    return {
+      user,
+      tokens,
+    }
+    
   }
 
   static handlerRefreshToken = async (refreshToken) => {
