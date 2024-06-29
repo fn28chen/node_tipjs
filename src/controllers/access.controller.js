@@ -31,10 +31,22 @@ class AccessController {
       }
     }).send(res);
   };
-  refreshToken = async (req, res, next) => {
+  handlerRefreshToken = async (req, res, next) => {
+    // new OK({
+    //   message: "User refreshed token successfully",
+    //   metadata: await AccessService.handlerRefreshToken(req.body.refreshToken),
+    //   options: {
+    //     limit: 10,
+    //   }
+    // }).send(res);
+
     new OK({
       message: "User refreshed token successfully",
-      metadata: await AccessService.handlerRefreshToken(req.body),
+      metadata: await AccessService.handlerRefreshToken({
+        refreshToken: req.refreshToken,
+        user: req.user,
+        keyStore: req.keyStore,
+      }),
       options: {
         limit: 10,
       }
