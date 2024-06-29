@@ -45,38 +45,21 @@ class AccessService {
 
     // step 3: Create privateKey, publicKey and save collection keyStore
     if (newShop) {
-      // created privateKey, publicKey
-      const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-        modulusLength: 4096,
-        publicKeyEncoding: {
-          type: "pkcs1",
-          format: "pem",
-        },
-        privateKeyEncoding: {
-          type: "pkcs1",
-          format: "pem",
-        },
-      });
-      // const privateKey = crypto.randomBytes(64).toString("hex");
-      // const publicKey = crypto.randomBytes(64).toString("hex");
+      
+      const privateKey = crypto.randomBytes(64).toString("hex");
+      const publicKey = crypto.randomBytes(64).toString("hex");
       console.log({ privateKey, publicKey }); // save collection keyStore
-      const publicKeyString = await KeyTokenService.createKeyToken({
+      const keyStore = await KeyTokenService.createKeyToken({
         userId: newShop._id,
         publicKey,
+        privateKey,
       });
-      if (!publicKeyString) {
+      if (!keyStore) {
         return {
           code: "xxxx",
           message: "Create publicKey fail",
         };
       }
-
-      const publicKeyObject = crypto.createPublicKey({
-        key: publicKeyString,
-        format: "pem",
-        type: "spki",
-      });
-
       // step 4: Create token pair
       const tokens = await createTokenPair(
         {
@@ -119,17 +102,19 @@ class AccessService {
     // step 3: Create token pair and save
     // The privateKey, publicKey in login is same method as signUp
     // if not, they can't decrypt the token
-    const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
-      modulusLength: 4096,
-      publicKeyEncoding: {
-        type: "pkcs1",
-        format: "pem",
-      },
-      privateKeyEncoding: {
-        type: "pkcs1",
-        format: "pem",
-      },
-    });
+    // const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+    //   modulusLength: 4096,
+    //   publicKeyEncoding: {
+    //     type: "pkcs1",
+    //     format: "pem",
+    //   },
+    //   privateKeyEncoding: {
+    //     type: "pkcs1",
+    //     format: "pem",
+    //   },
+    // });
+    const privateKey = crypto.randomBytes(64).toString("hex");
+    const publicKey = crypto.randomBytes(64).toString("hex");
     console.log({ privateKey, publicKey }); // save collection keyStore
     const publicKeyString = await KeyTokenService.createKeyToken({
       userId: foundShop._id,
@@ -171,23 +156,23 @@ class AccessService {
 
   static logout = async (keyStore) => {
     const delKey = await KeyTokenService.removeKeyById(keyStore._id);
-    console.log({delKey});
+    console.log({ delKey });
     return delKey;
-  }
+  };
 
-  static handlerRefreshTokenV2 = async ({keyStore, user, refreshToken}) => {
+  static handlerRefreshTokenV2 = async ({ keyStore, user, refreshToken }) => {
     const { userId, email } = user;
-    if(keyStore.refreshTokenUsed.includes(refreshToken)) {
+    if (keyStore.refreshTokenUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyById(userId);
       throw new ForbiddenError("Error: Refresh token used!");
     }
 
-    if(keyStore.refreshToken !== refreshToken) {
+    if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailureError("Error: Refresh token not found!");
     }
 
     const foundShop = await findByEmail(email);
-    if(!foundShop) throw new AuthFailureError("Error: Shop not found!");
+    if (!foundShop) throw new AuthFailureError("Error: Shop not found!");
 
     const tokens = await createTokenPair(
       {
@@ -205,35 +190,44 @@ class AccessService {
       $addToSet: {
         refreshTokenUsed: refreshToken,
       },
-    })
+    });
 
     return {
       user,
       tokens,
-    }
-    
-  }
+    };
+  };
 
   static handlerRefreshToken = async (refreshToken) => {
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(refreshToken);
-    if(foundToken) {
-      const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey);
-      console.log("1.", {userId, email});
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+    if (foundToken) {
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey
+      );
+      console.log("1.", { userId, email });
       // delete all tokens on keyStore
       await keyTokenModel.deleteKeyById(userId);
       throw new ConflictRequestError("Error: Refresh token used!");
     }
 
-    const holderToken = await KeyTokenService.findByRefreshToken({refreshToken});
-    if(!holderToken) {
+    const holderToken = await KeyTokenService.findByRefreshToken({
+      refreshToken,
+    });
+    if (!holderToken) {
       throw new AuthFailureError("Error: Refresh token not found!");
     }
 
-    const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey);
-    console.log("2.", {userId, email});
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    );
+    console.log("2.", { userId, email });
 
     const foundShop = await findByEmail(email);
-    if(!foundShop) throw new AuthFailureError("Error: Shop not found!");
+    if (!foundShop) throw new AuthFailureError("Error: Shop not found!");
 
     const tokens = await createTokenPair(
       {
@@ -251,13 +245,13 @@ class AccessService {
       $addToSet: {
         refreshTokenUsed: refreshToken,
       },
-    })
+    });
 
     return {
       user: { userId, email },
       tokens,
-    }
-  }
+    };
+  };
 }
 
 module.exports = AccessService;
