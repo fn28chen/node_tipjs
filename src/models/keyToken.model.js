@@ -1,16 +1,16 @@
 'use strict'
-const { model, Schema } = require("mongoose");
+const { mongoose, model, Schema } = require("mongoose");
 
 const DOCUMENT_NAME = "Key";
 const COLLECTION_NAME = "Keys";
 
 // Declare the Schema of the Mongo model
-const keyTokenSchema = new Schema(
+const keyTokenSchema = new mongoose.Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: "Shop",
     },
     privateKey: {
       type: String,
@@ -36,4 +36,4 @@ const keyTokenSchema = new Schema(
 );
 
 //Export the model
-module.exports = model(DOCUMENT_NAME, keyTokenSchema);
+module.exports = mongoose.model(DOCUMENT_NAME, keyTokenSchema);

@@ -1,5 +1,7 @@
 "use strict";
 
+const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 const { filter } = require("lodash");
 const keyTokenModel = require("../models/keyToken.model");
 const { Types } = require("mongoose");
@@ -31,11 +33,11 @@ class KeyTokenService {
   };
 
   static findByUserId = async (userId) => {
-    return await keyTokenModel.findOne({ user: Types.ObjectId(userId)});
+    return await keyTokenModel.findOne({ user: new ObjectId(userId)});
   }
 
   static removeKeyById = async (id) => {
-    return await keyTokenModel.deleteOne(id).lean();
+    return await keyTokenModel.deleteOne({ _id: id });
   };
 
   static findByRefreshTokenUsed = async (refreshToken) => {

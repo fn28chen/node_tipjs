@@ -11,14 +11,14 @@ const apiKey = async(req, res, next) => {
         const key = req.headers[HEADER.API_KEY]?.toString();
         if (!key) {
             return res.status(403).json({
-                message: 'Forbidden'
+                message: 'Forbidden 1'
             });
         }
 
         const objKey = await findById(key);
         if(!objKey) {
             return res.status(403).json({
-                message: 'Forbidden'
+                message: 'Forbidden 2'
             });
         }
         req.objKey = objKey;
@@ -48,7 +48,7 @@ const permission = (permissions) => {
 
 const asyncHandler = fn => {
     return (req, res, next) => {
-        return Promise.resolve(fn(req, res, next)).catch(next);
+        fn(req, res, next).catch(next);
     }
 }
 

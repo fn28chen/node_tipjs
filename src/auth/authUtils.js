@@ -12,14 +12,12 @@ const HEADER = {
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
   try {
-    const accessToken = await JWT.sign(payload, privateKey, {
-      algorithm: "RS256",
-      expiresIn: "1d",
+    const accessToken = await JWT.sign(payload, publicKey, {
+      expiresIn: "1 days",
     });
 
     const refreshToken = await JWT.sign(payload, privateKey, {
-      algorithm: "RS256",
-      expiresIn: "7d",
+      expiresIn: "7 days",
     });
 
     JWT.verify(accessToken, publicKey, (error, decoded) => {
@@ -62,23 +60,41 @@ const authentication = asyncHandler(async (req, res, next) => {
 
 const authenticationV2 = asyncHandler(async(req, res, next) => {
   const userId = req.headers[HEADER.CLIENT_ID];
+  console.log("User Id: ", userId);
   if (!userId) throw new AuthFailureError("Missing userId");
 
   const keyStore = await findByUserId(userId);
   if (!keyStore) throw new NotFoundError("Not found userId");
   
+  // const refreshToken = req.headers[HEADER.REFRESHTOKEN];
+  // console.log(refreshToken);
   if(req.headers[HEADER.REFRESHTOKEN]) {
     try {
       const refreshToken = req.headers[HEADER.REFRESHTOKEN];
+      console.log("Refresh Token:", refreshToken);
       const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
+      console.log("ID: ", userId, decodeUser);
       if(userId !== decodeUser.userId) throw new AuthFailureError("Invalid userId");
       req.keyStore = keyStore;
       req.user = decodeUser;
       req.refreshToken = refreshToken;
       return next();
     } catch (error) {
-      throw error("Invalid refreshToken");
+      throw error;
     }
+  }
+
+  const accessToken = req.headers[HEADER.AUTHORIZATION];
+  if (!accessToken) throw new AuthFailureError("Missing Access Token");
+
+  try {
+    const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+    if (userId !== decodeUser.userId) throw new AuthFailureError("Invalid userId");
+    req.keyStore = keyStore;
+    req.user = decodeUser;
+    return next();
+  } catch (error) {
+    throw new NotFoundError("Not found userId");
   }
 })
 
