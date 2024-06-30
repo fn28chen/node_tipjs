@@ -7,7 +7,7 @@ const {
   furniture,
 } = require("../../models/product.model");
 
-const queryProduct = async (query) => {
+const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
     .populate("product_shop", "name email -_id")
@@ -50,16 +50,12 @@ const unPublishProductByShop = async ({ product_shop, product_id }) => {
 };
 
 const searchProductsByUser = async ({ keySearch }) => {
-  const regexSearch = new RegExp(keySearch, "i");
+  const regexSearch = new RegExp(keySearch);
   const results = await product
-    .find(
-      {
-        isDraft: false,
-        $text: { $search: regexSearch },
-      },
-      { score: { $meta: "textScore" } }
+    .find({ $text: { $search: regexSearch }
+      }, { score: { $meta: 'textScore' } }
     )
-    .sort({ score: { $meta: "textScore" } })
+    .sort({ score: { $meta: 'textScore' } })
     .lean();
   return results;
 };

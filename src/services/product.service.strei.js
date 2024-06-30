@@ -12,6 +12,7 @@ const {
   publishProductByShop,
   findAllPublishedForShop,
   unPublishProductByShop,
+  searchProductsByUser,
 } = require("../models/repositories/product.repo");
 
 // define Factory class to create product (Service Product)
