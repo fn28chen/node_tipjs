@@ -22,7 +22,7 @@ class ProductFactory {
     ProductFactory.productRegistry[type] = productClass;
   }
 
-  static async createProduct() {
+  static async createProduct(type, payload) {
     const productClass = ProductFactory.productRegistry[type];
     if (!productClass) {
       throw new BadRequestError(`Invalid product type ${type}`);
@@ -135,9 +135,5 @@ ProductFactory.registerProductType("Clothing", Clothing);
 ProductFactory.registerProductType("Electronics", Electronics);
 ProductFactory.registerProductType("Furnitures", Furnitures);
 
-module.exports = {
-  ProductFactory,
-  Clothing,
-  Electronics,
-  Furnitures,
-};
+module.exports = ProductFactory;
+

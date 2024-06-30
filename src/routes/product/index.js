@@ -4,7 +4,9 @@ const express = require('express');
 const productController = require('../../controllers/product.controller');
 const router = express.Router();
 const { asyncHandler } = require('../../auth/checkAuth');
+const { authentication, authenticationV2 } = require('../../auth/authUtils');
 
+router.use(authenticationV2);
 router.get('/search/:keySearch', asyncHandler(productController.searchProductsByUser));
 
 router.post('/create', asyncHandler(productController.createProduct));
