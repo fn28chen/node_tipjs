@@ -9,7 +9,7 @@ class ProductFactory {
         type: "Clothing",
         payload
     */
-  static async createProduct() {
+  static async createProduct(type, payload) {
     switch (type) {
       case "Electronics":
         return new Electronics(payload).createProduct();

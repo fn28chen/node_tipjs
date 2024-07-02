@@ -12,6 +12,8 @@ const {
   publishProductByShop,
   findAllPublishedForShop,
   unPublishProductByShop,
+  searchProductsByUser,
+  findAllProducts,
 } = require("../models/repositories/product.repo");
 
 // define Factory class to create product (Service Product)
@@ -22,7 +24,7 @@ class ProductFactory {
     ProductFactory.productRegistry[type] = productClass;
   }
 
-  static async createProduct() {
+  static async createProduct(type, payload) {
     const productClass = ProductFactory.productRegistry[type];
     if (!productClass) {
       throw new BadRequestError(`Invalid product type ${type}`);
@@ -39,17 +41,44 @@ class ProductFactory {
   }
 
   static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
-    const query = { product_shop, isDraft: true };
+    const query = { product_shop, isDraft: true, isPublished: false };
     return await findAllDraftsForShop({ query, limit, skip });
   }
 
   static async findAllPublishedForShop({ product_shop, limit = 50, skip = 0 }) {
-    const query = { product_shop, isPublished: true };
+    const query = { product_shop, isDraft: false, isPublished: true };
     return await findAllPublishedForShop({ query, limit, skip });
+  }
+
+  static async findAllProducts({
+    limit = 50,
+    sort = "ctime",
+    page = 1,
+    filter = { isPublished: true },
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ["product_name", "product_price", "product_thumb"],
+    });
+  }
+
+  static async findProducts({ keySearch }) {
+    return await findProducts({ keySearch });
   }
 
   static async searchProductsByUser({ keySearch }) {
     return await searchProductsByUser({ keySearch });
+  }
+
+  static async updateProduct(type, payload) {
+    const productClass = ProductFactory.productRegistry[type];
+    if (!productClass) {
+      throw new BadRequestError(`Invalid product type ${type}`);
+    }
+    return new productClass(payload).updateProduct();
   }
 }
 
@@ -135,9 +164,4 @@ ProductFactory.registerProductType("Clothing", Clothing);
 ProductFactory.registerProductType("Electronics", Electronics);
 ProductFactory.registerProductType("Furnitures", Furnitures);
 
-module.exports = {
-  ProductFactory,
-  Clothing,
-  Electronics,
-  Furnitures,
-};
+module.exports = ProductFactory;
