@@ -73,6 +73,13 @@ class ProductController {
       metadata: await ProductService.searchProductsByUser(req.params),
     }).send(res);
   };
+
+  findAllProducts = async(req, res, next) => {
+    new OK({
+      message: "Get list findAllProducts successfully",
+      metadata: await ProductService.findAllProducts(req.query),
+    }).send(res);
+  }
 }
 
 module.exports = new ProductController();
