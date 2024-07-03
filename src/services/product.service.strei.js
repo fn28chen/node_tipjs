@@ -17,6 +17,7 @@ const {
   findProducts,
   updateProductById,
 } = require("../models/repositories/product.repo");
+const { removeUndefinedCheck, updateNestedObjectParser } = require("../utils");
 
 // define Factory class to create product (Service Product)
 class ProductFactory {
@@ -141,18 +142,19 @@ class Clothing extends Product {
   async updateProduct(product_id) {
     // remove attr has null undefined
     console.log("Product ID in Update Product in Clothing class:", product_id);
-    const objectParams = this;
+    const objectParams = removeUndefinedCheck(this);
+    const nestedObjectParams = updateNestedObjectParser(objectParams);
     // check update
     if (objectParams.product_attributes) {
       await updateProductById({
         product_id,
-        objectParams,
+        bodyUpdate: nestedObjectParams,
         model: clothes,
         isNew: true,
       });
     }
 
-    const updateProduct = await super.updateProduct(product_id, objectParams);
+    const updateProduct = await super.updateProduct(product_id, nestedObjectParams);
     return updateProduct;
   }
 }
@@ -176,18 +178,19 @@ class Electronics extends Product {
   async updateProduct(product_id) {
     // remove attr has null undefined
     console.log("Product ID in Update Product in Clothing class:", product_id);
-    const objectParams = this;
+    const objectParams = removeUndefinedCheck(this);
+    const nestedObjectParams = updateNestedObjectParser(objectParams);
     // check update
     if (objectParams.product_attributes) {
       await updateProductById({
         product_id,
-        objectParams,
+        bodyUpdate: nestedObjectParams,
         model: electronics,
         isNew: true,
       });
     }
 
-    const updateProduct = await super.updateProduct(product_id, objectParams);
+    const updateProduct = await super.updateProduct(product_id, nestedObjectParams);
     return updateProduct;
   }
 }
@@ -211,18 +214,19 @@ class Furnitures extends Product {
   async updateProduct(product_id) {
     // remove attr has null undefined
     console.log("Product ID in Update Product in Clothing class:", product_id);
-    const objectParams = this;
+    const objectParams = removeUndefinedCheck(this);
+    const nestedObjectParams = updateNestedObjectParser(objectParams);
     // check update
     if (objectParams.product_attributes) {
       await updateProductById({
         product_id,
-        objectParams,
+        bodyUpdate: nestedObjectParams,
         model: furnitures,
         isNew: true,
       });
     }
 
-    const updateProduct = await super.updateProduct(product_id, objectParams);
+    const updateProduct = await super.updateProduct(product_id, nestedObjectParams);
     return updateProduct;
   }
 }
