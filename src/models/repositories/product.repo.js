@@ -6,7 +6,7 @@ const {
   clothing,
   furniture,
 } = require("../../models/product.model");
-const { getSelectData } = require("../../utils");
+const { getSelectData, unGetSelectData } = require("../../utils");
 
 const queryProduct = async ({ query, limit, skip }) => {
   console.log("Query: ", query);
@@ -22,12 +22,12 @@ const queryProduct = async ({ query, limit, skip }) => {
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
   console.log("Query Drafted: ", query);
-  return await queryProduct({query, limit, skip});
+  return await queryProduct({ query, limit, skip });
 };
 
 const findAllPublishedForShop = async ({ query, limit, skip }) => {
   console.log("Query Published: ", query);
-  return await queryProduct({query, limit, skip});
+  return await queryProduct({ query, limit, skip });
 };
 
 const publishProductByShop = async ({ product_shop, product_id }) => {
@@ -83,6 +83,25 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
   return products;
 };
 
+const findProducts = async ({ product_id, unSelect }) => {
+  return await product
+    .findById(product_id)
+    .select(unGetSelectData(unSelect))
+    .lean()
+    .exec();
+};
+
+const updateProductById = async ({
+  product_id,
+  bodyUpdate,
+  model,
+  isNew = true,
+}) => {
+  return await model.findByIdAndUpdate(product_id, bodyUpdate, {
+    new: isNew,
+  });
+};
+
 module.exports = {
   findAllDraftsForShop,
   findAllPublishedForShop,
@@ -90,4 +109,6 @@ module.exports = {
   unPublishProductByShop,
   searchProductsByUser,
   findAllProducts,
+  findProducts,
+  updateProductById,
 };
