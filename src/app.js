@@ -40,7 +40,7 @@ app.use((error, req, res, next) => {
 		status: 'error',
 		code: statusCode,
 		stack: error.stack,
-		message: (`Error is here 1:` + error.message) || 'Internal Server Error',
+		message: (`Error is here 1: ` + error.message) || 'Internal Server Error',
 	})
 });
 

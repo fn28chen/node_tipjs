@@ -15,6 +15,7 @@ const {
   searchProductsByUser,
   findAllProducts,
   findProducts,
+  updateProductById,
 } = require("../models/repositories/product.repo");
 
 // define Factory class to create product (Service Product)
@@ -26,11 +27,19 @@ class ProductFactory {
   }
 
   static async createProduct(type, payload) {
+    console.log(type);
     const productClass = ProductFactory.productRegistry[type];
     if (!productClass) {
       throw new BadRequestError(`Invalid product type ${type}`);
     }
     return new productClass(payload).createProduct();
+  }
+
+  static async updateProduct(type, product_id, payload) {
+    const productClass = ProductFactory.productRegistry[type];
+    if (!productClass)
+      throw new BadRequestError(`Invalid product type ${type}`);
+    return new productClass(payload).updateProduct(product_id);
   }
 
   static async publishProductByShop({ product_shop, product_id }) {
@@ -67,19 +76,14 @@ class ProductFactory {
   }
 
   static async findProducts({ product_id }) {
-    return await findProducts({ product_id, unSelect: ["__v"] });
+    return await findProducts({
+      product_id,
+      unSelect: ["__v", "product_variations"],
+    });
   }
 
   static async searchProductsByUser({ keySearch }) {
     return await searchProductsByUser({ keySearch });
-  }
-
-  static async updateProduct(type, payload) {
-    const productClass = ProductFactory.productRegistry[type];
-    if (!productClass) {
-      throw new BadRequestError(`Invalid product type ${type}`);
-    }
-    return new productClass(payload).updateProduct();
   }
 }
 
@@ -109,6 +113,15 @@ class Product {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  // update product
+  async updateProduct(product_id, bodyUpdate) {
+    return await updateProductById({
+      product_id,
+      bodyUpdate,
+      model: product,
+    });
+  }
 }
 
 // define sub-class for different product types (Concrete Product)
@@ -123,6 +136,24 @@ class Clothing extends Product {
       throw new BadRequestError("Failed to create new product");
     }
     return newProduct;
+  }
+
+  async updateProduct(product_id) {
+    // remove attr has null undefined
+    console.log("Product ID in Update Product in Clothing class:", product_id);
+    const objectParams = this;
+    // check update
+    if (objectParams.product_attributes) {
+      await updateProductById({
+        product_id,
+        objectParams,
+        model: clothes,
+        isNew: true,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(product_id, objectParams);
+    return updateProduct;
   }
 }
 
@@ -141,6 +172,24 @@ class Electronics extends Product {
     }
     return newProduct;
   }
+  
+  async updateProduct(product_id) {
+    // remove attr has null undefined
+    console.log("Product ID in Update Product in Clothing class:", product_id);
+    const objectParams = this;
+    // check update
+    if (objectParams.product_attributes) {
+      await updateProductById({
+        product_id,
+        objectParams,
+        model: electronics,
+        isNew: true,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(product_id, objectParams);
+    return updateProduct;
+  }
 }
 
 class Furnitures extends Product {
@@ -157,6 +206,24 @@ class Furnitures extends Product {
       throw new BadRequestError("Failed to create new product");
     }
     return newProduct;
+  }
+  
+  async updateProduct(product_id) {
+    // remove attr has null undefined
+    console.log("Product ID in Update Product in Clothing class:", product_id);
+    const objectParams = this;
+    // check update
+    if (objectParams.product_attributes) {
+      await updateProductById({
+        product_id,
+        objectParams,
+        model: furnitures,
+        isNew: true,
+      });
+    }
+
+    const updateProduct = await super.updateProduct(product_id, objectParams);
+    return updateProduct;
   }
 }
 

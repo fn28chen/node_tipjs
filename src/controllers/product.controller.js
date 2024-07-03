@@ -18,6 +18,20 @@ class ProductController {
     }).send(res);
   };
 
+  updateProduct = async (req, res, next) => {
+    new OK({
+      message: "Update product successfully",
+      metadata: await ProductService.updateProduct(
+        req.body.product_type,
+        req.params.product_id,
+        {
+          ...req.body,
+          product_shop: req.user.userId,
+        }
+      ),
+    }).send(res);
+  };
+
   publishProduct = async (req, res, next) => {
     new CREATED({
       message: "Product published successfully",
@@ -74,21 +88,23 @@ class ProductController {
     }).send(res);
   };
 
-  findAllProducts = async(req, res, next) => {
+  findAllProducts = async (req, res, next) => {
     new OK({
       message: "Get list findAllProducts successfully",
       metadata: await ProductService.findAllProducts(req.query),
     }).send(res);
-  }
+  };
 
-  findProducts = async(req, res, next) => {
+  findProducts = async (req, res, next) => {
     new OK({
       message: "Get list findProducts successfully",
       metadata: await ProductService.findProducts({
         product_id: req.params.product_id,
-      }), 
+      }),
     }).send(res);
-  }
+  };
+
+  
 }
 
 module.exports = new ProductController();
